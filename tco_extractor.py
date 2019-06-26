@@ -1,3 +1,4 @@
+import codecs
 from urllib.request import urlopen
 from re import finditer, search
 from itertools import chain
@@ -62,14 +63,14 @@ def get_deck_content(id):
     raw_civ_card_list = [(civ_name, civ_count, get_cards(civ_content)) for civ_name, (civ_count, civ_content) in get_civilization_segments(list_segment).items()]
     multi_count = str(sum([int(count) for _, count, _ in filter(lambda tup: '/' in tup[0], raw_civ_card_list)]))
     multi_cards = list(chain(*[cards for _, _, cards in filter(lambda tup: '/' in tup[0], raw_civ_card_list)]))
-    civ_cards = [("%s: %s\n" % (civ_name, civ_count)) + '\n'.join(civ_cards) for civ_name, civ_count, civ_cards in list(filter(lambda tup: '/' not in tup[0], raw_civ_card_list)) + [("Multi", multi_count, multi_cards)]]
+    civ_cards = [("%s: %s\n" % (civ_name, civ_count)) + '\n'.join(civ_cards) for civ_name, civ_count, civ_cards in list(filter(lambda tup: '/' not in tup[0], raw_civ_card_list)) + ([("Multi", multi_count, multi_cards)] if int(multi_count) > 0 else [])]
     return '\n\n'.join(civ_cards) + "\n\nTOTAL: " + str(sum([int(count) for _, count, _ in raw_civ_card_list]))
     
 def save_deck_to_disk(path, name, id):
     for character in "/<>:\"/\\|?*":
         name = name.replace(character, "_")
-
-    with open(join(path, name + ".txt"), 'w') as output_file:
+     
+    with codecs.open(join(path, name + ".txt"), "w", "utf-8-sig") as output_file:
         output_file.write(get_deck_content(id))
         
 def handle_author(author_name):   
